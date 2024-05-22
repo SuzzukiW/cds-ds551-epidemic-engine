@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark
+  template:
+    metadata:
+      labels:
+        app: spark
+    spec:
+      containers:
+      - name: spark-master
+        image: bitnami/spark:3.3.2
+        ports:
+        - containerPort: 7077
+        - containerPort: 8080
+      - name: spark-worker
+        image: bitnami/spark:3.3.2
+        env:
+        - name: SPARK_MODE
+          value: worker
+        - name: SPARK_MASTER_URL
+          value: spark://spark-master:7077
+      - name: spark-analytics
+        image: craigcorp/spark-analytics:latest

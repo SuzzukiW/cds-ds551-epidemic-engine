@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-visualization
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-visualization
+  template:
+    metadata:
+      labels:
+        app: data-visualization
+    spec:
+      containers:
+      - name: data-visualization
+        image: craigcorp/data-visualization:latest
+        ports:
+        - containerPort: 5000

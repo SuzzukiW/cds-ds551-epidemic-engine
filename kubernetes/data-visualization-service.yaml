@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-visualization
+spec:
+  selector:
+    app: data-visualization
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: LoadBalancer

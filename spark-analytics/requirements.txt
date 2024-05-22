@@ -1,0 +1,4 @@
+pyspark==3.3.2
+requests
+numpy==1.23.4
+py4j==0.10.9.5

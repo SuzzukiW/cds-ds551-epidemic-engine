@@ -1,0 +1,57 @@
+# data-visualization/docker-compose.yml
+
+services:
+  data-visualization:
+    build: .
+    container_name: data-visualization
+    ports:
+      - "5000:5000"  # Updated port mapping
+    volumes:
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./tests/test_visualizations.py:/app/tests/test_visualizations.py
+    # depends_on:
+    #   - spark-master
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5000"]  # Updated health check URL
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    # restart: on-failure
+
+  data-visualization-tests:
+    build: .
+    container_name: data-visualization-tests
+    command: pytest tests/test_visualizations.py
+    volumes:
+      - ./test_visualizations.py:/app/test_visualizations.py
+    depends_on:
+      data-visualization:
+        condition: service_healthy
+    # - spark-master
+    restart: on-failure
+
+# spark-master:
+#   image: bitnami/spark:3.3.2
+#   container_name: spark-master
+#   hostname: spark-master
+#   environment:
+#     - SPARK_MODE=master
+#     - SPARK_RPC_AUTHENTICATION_ENABLED=no
+#     - SPARK_RPC_ENCRYPTION_ENABLED=no
+#     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+#     - SPARK_SSL_ENABLED=no
+#   ports:
+#     - "8080:8080"
+#     - "7077:7077"
+#   healthcheck:
+#     test: ["CMD", "curl", "-f", "http://localhost:8080"]
+#     interval: 30s
+#     timeout: 10s
+#     retries: 3
+#   restart: on-failure
+
+networks:
+  default:
+    driver: bridge

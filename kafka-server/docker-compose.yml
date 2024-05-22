@@ -1,0 +1,68 @@
+services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    restart: on-failure
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - "kafka_data:/bitnami/main"
+    environment:
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_BROKER_ID=1  # set a valid broker ID within the acceptable range
+      - KAFKA_CFG_RESERVED_BROKER_MAX_ID=1000000  # explicitly set the max reserved broker ID
+    depends_on:
+      - zookeeper
+    restart: always
+
+  consumer:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - default
+    volumes:
+      - "./:/app/"
+    restart: on-failure
+
+  kafka-manager:
+    image: docker.io/hlebalbau/kafka-manager:latest
+    # platform: linux/amd64
+    ports:
+      - "9000:9000"
+    environment:
+      - ZK_HOSTS=zookeeper:2181
+    depends_on:
+      - zookeeper
+    restart: on-failure
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  consumer_data:
+    driver: localmo

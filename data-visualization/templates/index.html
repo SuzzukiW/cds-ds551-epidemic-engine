@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Event Visualization</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        .graph-container {
+            @apply mb-12;
+        }
+        .graph-container img {
+            @apply max-w-full h-auto rounded shadow-md transition duration-300 ease-in-out transform hover:scale-105;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center mb-8 animate__animated animate__fadeInDown text-blue-600">Health Event Visualization</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="graph-container">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Distribution of Event Types</h3>
+                <img src="{{ url_for('static', filename='event_type_distribution.png') }}" class="animate__animated animate__zoomIn" alt="Distribution of Event Types">
+            </div>
+            <div class="graph-container">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Distribution of Severity Levels</h3>
+                <img src="{{ url_for('static', filename='severity_distribution.png') }}" class="animate__animated animate__zoomIn" alt="Distribution of Severity Levels">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Heatmap of Event Counts by Location</h3>
+                <img src="{{ url_for('static', filename='location_heatmap.png') }}" class="animate__animated animate__zoomIn" alt="Heatmap of Event Counts by Location">
+            </div>
+            <div class="graph-container">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Distribution of Anomalies</h3>
+                <img src="{{ url_for('static', filename='anomaly_distribution.png') }}" class="animate__animated animate__zoomIn" alt="Distribution of Anomalies">
+            </div>
+            <div class="graph-container">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Streaming Event Counts by Type</h3>
+                <img src="{{ url_for('static', filename='streaming_events.png') }}" class="animate__animated animate__zoomIn" alt="Streaming Event Counts by Type">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Past Outbreaks by Location</h3>
+                <img src="{{ url_for('static', filename='past_outbreaks.png') }}" class="animate__animated animate__zoomIn" alt="Past Outbreaks by Location">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Predicted Outbreaks by Location and Severity</h3>
+                <img src="{{ url_for('static', filename='predicted_outbreak.png') }}" class="animate__animated animate__zoomIn" alt="Predicted Outbreaks by Location and Severity">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Correlation between Event Types and Severity Levels</h3>
+                <img src="{{ url_for('static', filename='event_severity_correlation.png') }}" class="animate__animated animate__zoomIn" alt="Correlation between Event Types and Severity Levels">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Monthly Event Counts by Type</h3>
+                <img src="{{ url_for('static', filename='monthly_event_counts.png') }}" class="animate__animated animate__zoomIn" alt="Monthly Event Counts by Type">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Daily Event Counts by Type</h3>
+                <img src="{{ url_for('static', filename='daily_event_counts.png') }}" class="animate__animated animate__zoomIn" alt="Daily Event Counts by Type">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Correlation between Event Types and Locations</h3>
+                <img src="{{ url_for('static', filename='event_location_correlation.png') }}" class="animate__animated animate__zoomIn" alt="Correlation between Event Types and Locations">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Severity Trend over Time</h3>
+                <img src="{{ url_for('static', filename='severity_trend.png') }}" class="animate__animated animate__zoomIn" alt="Severity Trend over Time">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInRight text-blue-500">Number of Unique Locations over Time</h3>
+                <img src="{{ url_for('static', filename='unique_locations.png') }}" class="animate__animated animate__zoomIn" alt="Number of Unique Locations over Time">
+            </div>
+            <div class="graph-container md:col-span-2">
+                <h3 class="text-2xl font-semibold mb-4 animate__animated animate__fadeInLeft text-blue-500">Distribution of Event Duration by Type</h3>
+                <img src="{{ url_for('static', filename='event_duration_distribution.png') }}" class="animate__animated animate__zoomIn" alt="Distribution of Event Duration by Type">
+            </div>
+        </div>
+    </div>
+</body>
+</html>

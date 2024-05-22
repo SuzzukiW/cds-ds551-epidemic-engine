@@ -1,0 +1,36 @@
+version: '3'
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow
+    restart: always
+    healthcheck:
+      test: ["CMD", "airflow", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./tests:/opt/airflow/tests
+    command: webserver
+    ports:
+      - "8080:8080"
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airflow-scheduler
+    restart: always
+    healthcheck:
+      test: ["CMD", "airflow", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./dags:/opt/airflow/dags
+    command: scheduler
+    depends_on:
+      - airflow

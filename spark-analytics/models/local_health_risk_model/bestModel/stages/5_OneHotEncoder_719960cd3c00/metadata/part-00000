@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1715155271786,"sparkVersion":"3.5.1","uid":"OneHotEncoder_719960cd3c00","paramMap":{"outputCol":"SeverityVec","inputCol":"SeverityIndex"},"defaultParamMap":{"handleInvalid":"error","dropLast":true,"outputCol":"OneHotEncoder_719960cd3c00__output"}}

@@ -1,0 +1,69 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2183:2183"  # Revert to default port mapping
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2183
+    healthcheck:
+      test: ["CMD", "echo", "ruok | nc localhost 2183 | grep imok"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9093:9093"  # Match internal and external ports
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2183  # Point to the default Zookeeper port
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9093"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: health_events
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d health_events"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  consumer:
+    build: .
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: health_events
+    restart: on-failure
+
+volumes:
+  postgres_data: {}
+
+networks:
+  default:
+    driver: bridge

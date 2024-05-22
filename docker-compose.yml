@@ -1,0 +1,182 @@
+services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    networks:
+      - default
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    restart: on-failure
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+    volumes:
+      - "kafka_data:/bitnami/main"
+    environment:
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_BROKER_ID=1  # set a valid broker ID within the acceptable range
+      - KAFKA_CFG_RESERVED_BROKER_MAX_ID=1000000  # explicitly set the max reserved broker ID
+    depends_on:
+      - zookeeper
+    restart: on-failure
+
+  consumer:
+    build: 
+      context: ./kafka-server
+      dockerfile: Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - default
+    volumes:
+      - "./kafka-server:/app/kafka-server"
+    restart: on-failure
+
+  kafka-manager:
+    image: docker.io/hlebalbau/kafka-manager:latest
+    ports:
+      - "9000:9000"
+    environment:
+      - ZK_HOSTS=zookeeper:2181
+    depends_on:
+      - zookeeper
+    restart: on-failure
+
+  spark-master:
+    image: bitnami/spark:3.3.2
+    container_name: spark-master
+    hostname: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    networks:
+      - default
+    depends_on:
+      kafka:
+        condition: service_healthy
+      consumer:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: on-failure
+
+  spark-analytics:
+    build:
+      context: ./spark-analytics
+      dockerfile: Dockerfile
+    container_name: spark-analytics
+    volumes:
+      - ./spark-analytics:/app/spark-analytics
+      # - ./spark-analytics/data:/app/data
+      # - ./spark-analytics/models:/app/models
+      # - ./spark-analytics/notebooks:/app/notebooks
+    depends_on:
+      - spark-master
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - default
+    restart: on-failure
+
+  spark-worker:
+    image: bitnami/spark:3.3.2
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8081:8081"
+    networks:
+      - default
+    depends_on:
+      spark-master:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://spark-worker:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: on-failure
+
+  data-visualization:
+    build: ./data-visualization
+    container_name: data-visualization
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data-visualization/:/app/data-visualization/
+      # - ./data-visualization/templates/:/app/templates/
+      # - ./data-visualization/static/:/app/static/
+      # - ./data-visualization/tests/:/app/tests/
+    depends_on:
+      spark-master:
+        condition: service_started
+      spark-worker:
+        condition: service_started
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: on-failure
+
+  data-visualization-tests:
+    build: ./data-visualization
+    container_name: data-visualization-tests
+    command: pytest app/data-visualization/tests/test_visualizations.py
+    # volumes:
+    #   - ./data-visualization/tests/:/app/tests/
+    depends_on:
+      data-visualization:
+        condition: service_healthy
+    restart: on-failure
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
+  consumer_data:
+    driver: local

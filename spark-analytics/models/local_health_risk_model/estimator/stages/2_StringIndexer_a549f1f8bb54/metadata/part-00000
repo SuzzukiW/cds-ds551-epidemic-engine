@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.StringIndexer","timestamp":1715155270279,"sparkVersion":"3.5.1","uid":"StringIndexer_a549f1f8bb54","paramMap":{"outputCol":"SeverityIndex","inputCol":"Severity"},"defaultParamMap":{"outputCol":"StringIndexer_a549f1f8bb54__output","stringOrderType":"frequencyDesc","handleInvalid":"error"}}

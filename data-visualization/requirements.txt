@@ -1,0 +1,6 @@
+pytest
+pandas
+matplotlib
+seaborn
+flask
+py4j
